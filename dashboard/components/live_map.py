@@ -51,63 +51,19 @@ def render_live_map(vehicles_df: pd.DataFrame, trip_updates_df: pd.DataFrame = N
                 how='left'
             )
     
-    # Add color based on delay
-    if 'delay_minutes' in vehicles_df.columns:
-        def get_color(delay):
-            if pd.isna(delay):
-                return [128, 128, 128, 200]  # Gray for unknown
-            elif delay <= 2:
-                return [0, 200, 0, 200]  # Green for on-time
-            elif delay <= 5:
-                return [255, 255, 0, 200]  # Yellow for slight delay
-            else:
-                return [255, 0, 0, 200]  # Red for significant delay
-        
-        vehicles_df['color'] = vehicles_df['delay_minutes'].apply(get_color)
-    else:
-        # Default blue if no delay data
-        vehicles_df['color'] = [[0, 100, 255, 200]] * len(vehicles_df)
+    # Prepare map data with proper types
+    map_df = vehicles_df[['latitude', 'longitude']].copy()
     
-    # Calculate map center
-    center_lat = vehicles_df['latitude'].mean()
-    center_lon = vehicles_df['longitude'].mean()
+    # Ensure numeric types
+    map_df['latitude'] = pd.to_numeric(map_df['latitude'], errors='coerce')
+    map_df['longitude'] = pd.to_numeric(map_df['longitude'], errors='coerce')
     
-    # Create PyDeck layer
-    layer = pdk.Layer(
-        'ScatterplotLayer',
-        data=vehicles_df,
-        get_position='[longitude, latitude]',
-        get_color='color',
-        get_radius=100,
-        pickable=True,
-        auto_highlight=True
-    )
+    # Add size for visualization
+    map_df['size'] = 50
     
-    # Set view state
-    view_state = pdk.ViewState(
-        latitude=center_lat,
-        longitude=center_lon,
-        zoom=11,
-        pitch=0
-    )
-    
-    # Create deck
-    deck = pdk.Deck(
-        layers=[layer],
-        initial_view_state=view_state,
-        tooltip={
-            'html': '<b>Vehicle:</b> {vehicle_id}<br/>'
-                   '<b>Route:</b> {route_id}<br/>'
-                   '<b>Speed:</b> {speed} km/h<br/>'
-                   '<b>Delay:</b> {delay_minutes} min',
-            'style': {
-                'backgroundColor': 'steelblue',
-                'color': 'white'
-            }
-        }
-    )
-    
-    st.pydeck_chart(deck)
+    # Display using Streamlit's built-in map (simpler, more reliable)
+    st.caption(f"Displaying {len(map_df)} vehicles on map")
+    st.map(map_df, size='size', zoom=11)
     
     # Legend
     col1, col2, col3, col4 = st.columns(4)

@@ -21,6 +21,8 @@ def render_delay_heatmap(trip_updates_df: pd.DataFrame):
         st.info("No delay data available to display heatmap")
         return
     
+    st.caption(f"Analyzing {len(trip_updates_df)} trip updates")
+    
     # Extract hour if not already present
     if 'hour' not in trip_updates_df.columns:
         trip_updates_df['hour'] = pd.to_datetime(trip_updates_df['feed_timestamp']).dt.hour
@@ -55,7 +57,7 @@ def render_delay_heatmap(trip_updates_df: pd.DataFrame):
         xaxis=dict(dtick=1)
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
     
     # Summary insights
     with st.expander("📊 Heatmap Insights"):

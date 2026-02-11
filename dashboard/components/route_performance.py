@@ -67,7 +67,7 @@ def render_route_performance(trip_updates_df: pd.DataFrame, top_n: int = 15):
         yaxis={'categoryorder': 'total ascending'}  # Sort bars by value
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
     
     # Display data table
     with st.expander("📋 View Route Performance Data"):
@@ -80,4 +80,4 @@ def render_route_performance(trip_updates_df: pd.DataFrame, top_n: int = 15):
             'route_name': 'Route Name'
         })
         
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        st.dataframe(display_df, width='stretch', hide_index=True)

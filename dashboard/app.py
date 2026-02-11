@@ -101,15 +101,14 @@ with st.sidebar:
     st.caption("Update Frequency: Every 30 seconds")
     st.caption("Built with Streamlit | AWS | Python")
 
-# Load data
-with st.spinner("Loading real-time data..."):
-    data = load_dashboard_data()
-    vehicles_df = data['vehicles']
-    trip_updates_df = data['trip_updates']
+# Load data (without spinner to avoid screen darkening)
+data = load_dashboard_data()
+vehicles_df = data['vehicles']
+trip_updates_df = data['trip_updates']
 
-# Last updated timestamp
+# Last refreshed timestamp with countdown
 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-st.markdown(f'<div class="last-updated">Last Updated: {current_time}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="last-updated">Last Refreshed: {current_time} • Auto-refresh in 30s</div>', unsafe_allow_html=True)
 
 # Apply filters
 if selected_routes:
@@ -157,7 +156,7 @@ with st.expander("📈 Additional Analytics"):
                 title="Distribution of Delays",
                 labels={'delay_minutes': 'Delay (minutes)', 'count': 'Frequency'}
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("No delay data available")
     
@@ -180,7 +179,7 @@ with st.expander("📈 Additional Analytics"):
                 labels={'hour': 'Hour of Day', 'delay_minutes': 'Avg Delay (min)'},
                 markers=True
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("No delay data available")
     
@@ -191,13 +190,13 @@ with st.expander("📈 Additional Analytics"):
         
         if data_choice == "Vehicle Positions":
             if not vehicles_df.empty:
-                st.dataframe(vehicles_df.head(100), use_container_width=True)
+                st.dataframe(vehicles_df.head(100), width='stretch')
                 st.caption(f"Showing first 100 of {len(vehicles_df)} records")
             else:
                 st.info("No vehicle data available")
         else:
             if not trip_updates_df.empty:
-                st.dataframe(trip_updates_df.head(100), use_container_width=True)
+                st.dataframe(trip_updates_df.head(100), width='stretch')
                 st.caption(f"Showing first 100 of {len(trip_updates_df)} records")
             else:
                 st.info("No trip update data available")

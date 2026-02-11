@@ -77,22 +77,48 @@ class DashboardDataLoader:
         """
         if _self.use_aws and _self.dynamodb_table:
             try:
-                # Query recent vehicles from DynamoDB
+                # Query recent vehicles from DynamoDB - scan all pages to get more vehicles
+                items = []
                 response = _self.dynamodb_table.scan(
                     FilterExpression='record_type = :type',
-                    ExpressionAttributeValues={':type': 'vehicle_position'},
-                    Limit=1000
+                    ExpressionAttributeValues={':type': 'vehicle_position'}
                 )
+                items.extend(response.get('Items', []))
                 
-                items = response.get('Items', [])
+                # Continue scanning if there are more pages (up to 5000 items total)
+                while 'LastEvaluatedKey' in response and len(items) < 5000:
+                    response = _self.dynamodb_table.scan(
+                        FilterExpression='record_type = :type',
+                        ExpressionAttributeValues={':type': 'vehicle_position'},
+                        ExclusiveStartKey=response['LastEvaluatedKey']
+                    )
+                    items.extend(response.get('Items', []))
+                
                 
                 if items:
+                    # Convert DynamoDB Decimal to float
+                    from decimal import Decimal
+                    def decimal_to_float(obj):
+                        if isinstance(obj, Decimal):
+                            return float(obj)
+                        return obj
+                    
+                    items = [{k: decimal_to_float(v) for k, v in item.items()} for item in items]
+                    
                     df = pd.DataFrame(items)
-                    df['timestamp'] = pd.to_datetime(df['timestamp'])
                     
-                    # Keep only most recent position per vehicle
-                    df = df.sort_values('timestamp').groupby('vehicle_id').last().reset_index()
-                    
+                    # Convert timestamp if present
+                    if 'timestamp' in df.columns:
+                        df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce', utc=True)
+                        
+                        # Keep only most recent position per vehicle (last 10 minutes to account for timezone)
+                        from datetime import datetime, timedelta, timezone
+                        cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=10)
+                        df = df[df['timestamp'] > cutoff_time]
+                        
+                        # Group by vehicle_id and keep most recent
+                        if not df.empty and 'vehicle_id' in df.columns:
+                            df = df.sort_values('timestamp').groupby('vehicle_id').last().reset_index()
                     return df
             
             except Exception as e:
@@ -111,22 +137,53 @@ class DashboardDataLoader:
         """
         if _self.use_aws and _self.dynamodb_table:
             try:
-                # Query recent trip updates from DynamoDB
+                # Query recent trip updates from DynamoDB - scan all pages
+                items = []
                 response = _self.dynamodb_table.scan(
                     FilterExpression='record_type = :type',
-                    ExpressionAttributeValues={':type': 'trip_update'},
-                    Limit=5000
+                    ExpressionAttributeValues={':type': 'trip_update'}
                 )
+                items.extend(response.get('Items', []))
                 
-                items = response.get('Items', [])
+                # Continue scanning if there are more pages (up to 5000 items total)
+                while 'LastEvaluatedKey' in response and len(items) < 5000:
+                    response = _self.dynamodb_table.scan(
+                        FilterExpression='record_type = :type',
+                        ExpressionAttributeValues={':type': 'trip_update'},
+                        ExclusiveStartKey=response['LastEvaluatedKey']
+                    )
+                    items.extend(response.get('Items', []))
                 
                 if items:
+                    # Convert DynamoDB Decimal to float
+                    from decimal import Decimal
+                    def decimal_to_float(obj):
+                        if isinstance(obj, Decimal):
+                            return float(obj)
+                        return obj
+                    
+                    items = [{k: decimal_to_float(v) for k, v in item.items()} for item in items]
+                    
                     df = pd.DataFrame(items)
-                    df['feed_timestamp'] = pd.to_datetime(df['feed_timestamp'])
+                    df['feed_timestamp'] = pd.to_datetime(df['feed_timestamp'], errors='coerce', utc=True)
+                    
+                    # Filter to recent data (last hour)
+                    from datetime import datetime, timedelta, timezone
+                    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=1)
+                    df = df[df['feed_timestamp'] > cutoff_time]
                     
                     # Calculate delay_minutes if not present
                     if 'delay_minutes' not in df.columns and 'arrival_delay' in df.columns:
                         df['delay_minutes'] = df['arrival_delay'] / 60.0
+                    elif 'delay_minutes' not in df.columns and 'departure_delay' in df.columns:
+                        df['delay_minutes'] = df['departure_delay'] / 60.0
+                    
+                    # Group by route and trip to get average delay per trip
+                    if 'route_id' in df.columns and 'trip_id' in df.columns:
+                        df = df.groupby(['route_id', 'trip_id', 'vehicle_id']).agg({
+                            'delay_minutes': 'mean',
+                            'feed_timestamp': 'first'
+                        }).reset_index()
                     
                     return df
             
