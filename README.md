@@ -7,11 +7,11 @@
 
 A production-grade real-time analytics system that tracks Edmonton Transit System (ETS) performance. This project demonstrates end-to-end Data Engineering, Data Science, and Data Analysis capabilities in a single portfolio application.
 
-## 🌟 Live Demo
+##  Live Demo
 
-**Dashboard URL:** [Coming Soon - Deploy to Streamlit Cloud]
+**Dashboard URL:** https://ysdhimself-transit-analytics-dashboard-dashboardapp-x0lasd.streamlit.app/
 
-## 📊 Project Overview
+##  Project Overview
 
 This system:
 - **Ingests** live GTFS-RT transit data every 30 seconds via AWS Lambda
@@ -20,7 +20,7 @@ This system:
 - **Predicts** bus arrival delays using Random Forest ML model (R² ≥ 0.75)
 - **Visualizes** insights through an interactive Streamlit dashboard with real-time updates
 
-## 🏗️ Architecture
+##  Architecture
 
 ```mermaid
 flowchart LR
@@ -60,7 +60,7 @@ flowchart LR
     DynamoDB --> Streamlit
 ```
 
-## ✨ Features
+##  Features
 
 ### Data Engineering
 - ✅ Serverless ETL pipeline with AWS Lambda
@@ -82,7 +82,7 @@ flowchart LR
 - ✅ Live vehicle position map with color-coded delays
 - ✅ Auto-refresh every 30 seconds
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer | Technologies |
 |-------|-------------|
@@ -94,7 +94,7 @@ flowchart LR
 | **CI/CD** | GitHub Actions, AWS SAM |
 | **APIs** | Edmonton Open Data Portal, OpenWeatherMap |
 
-## 📂 Project Structure
+##  Project Structure
 
 ```
 transit-analytics-dashboard/
@@ -114,7 +114,7 @@ transit-analytics-dashboard/
 └── README.md
 ```
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 
@@ -216,7 +216,7 @@ aws dynamodb create-table \
    - etc. (see `.streamlit/secrets.toml` format in docs)
 5. Deploy!
 
-## 🧪 Testing
+##  Testing
 
 ```bash
 # Run all tests
@@ -229,7 +229,7 @@ pytest tests/ --cov=src --cov-report=html
 pytest tests/test_ingestion.py -v
 ```
 
-## 📊 Machine Learning Model
+##  Machine Learning Model
 
 ### Training the Model
 
@@ -257,7 +257,7 @@ python -m src.ml.train_model
 - `stop_sequence` (position along route)
 - `weather_temp` (optional: temperature in °C)
 
-## 📈 Key Metrics & KPIs
+##  Key Metrics & KPIs
 
 | Metric | Description | Target |
 |--------|-------------|--------|
@@ -266,7 +266,7 @@ python -m src.ml.train_model
 | **On-Time Rate** | % within 5 min of schedule | ≥ 80% |
 | **Data Freshness** | Age of latest data | < 60 seconds |
 
-## 🔧 Configuration
+##  Configuration
 
 ### Environment Variables
 
@@ -291,17 +291,17 @@ OPENWEATHER_LAT=53.5461
 OPENWEATHER_LON=-113.4937
 ```
 
-## 📝 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Edmonton Open Data Portal** for providing free GTFS and GTFS-RT feeds
 - **AWS Free Tier** for hosting infrastructure
 - **Streamlit** for the amazing dashboard framework
 
-## 📧 Contact
+## Contact
 
 **Yashdeep Singh Dadiala** - [ydadiala@ualberta.ca](mailto:ydadiala@ualberta.ca)
 
@@ -309,4 +309,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**⭐ Star this repository if you find it helpful!**
+** Star this repository if you find it helpful!**

@@ -28,17 +28,8 @@ class S3Uploader:
         """
         self.bucket_name = bucket_name or S3_BUCKET_NAME
         
-        # Initialize S3 client
-        if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
-            self.s3_client = boto3.client(
-                's3',
-                aws_access_key_id=AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                region_name=AWS_DEFAULT_REGION
-            )
-        else:
-            # Use default credentials (e.g., IAM role in Lambda)
-            self.s3_client = boto3.client('s3', region_name=AWS_DEFAULT_REGION)
+        # Initialize S3 client - use IAM role (default) in Lambda environment
+        self.s3_client = boto3.client('s3', region_name=AWS_DEFAULT_REGION)
     
     def generate_s3_key(self, data_type: str, timestamp: datetime = None) -> str:
         """

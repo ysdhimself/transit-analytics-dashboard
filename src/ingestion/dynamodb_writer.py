@@ -28,18 +28,8 @@ class DynamoDBWriter:
         """
         self.table_name = table_name or DYNAMODB_TABLE_NAME
         
-        # Initialize DynamoDB resource
-        if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
-            dynamodb = boto3.resource(
-                'dynamodb',
-                aws_access_key_id=AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                region_name=AWS_DEFAULT_REGION
-            )
-        else:
-            # Use default credentials (e.g., IAM role in Lambda)
-            dynamodb = boto3.resource('dynamodb', region_name=AWS_DEFAULT_REGION)
-        
+        # Initialize DynamoDB resource - use IAM role (default) in Lambda environment
+        dynamodb = boto3.resource('dynamodb', region_name=AWS_DEFAULT_REGION)
         self.table = dynamodb.Table(self.table_name)
     
     def convert_floats_to_decimal(self, obj):

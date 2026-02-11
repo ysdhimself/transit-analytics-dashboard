@@ -208,7 +208,6 @@ st.markdown("""
 <div style='text-align: center; color: #666; padding: 2rem;'>
     <p>Edmonton Transit System Real-Time Analytics Dashboard</p>
     <p>Data Engineering | Machine Learning | Data Visualization</p>
-    <p>© 2024 | Built with ❤️ using Python, AWS, and Streamlit</p>
 </div>
 """, unsafe_allow_html=True)
 
