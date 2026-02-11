@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: ETS Transit Analytics Dashboard - Data Ingestion Pipeline
+
+Globals:
+  Function:
+    Timeout: 60
+    MemorySize: 512
+    Runtime: python3.13
+
+Parameters:
+  S3BucketName:
+    Type: String
+    Default: ets-transit-data
+    Description: S3 bucket for storing raw GTFS-RT data (must already exist)
+  
+  DynamoDBTableName:
+    Type: String
+    Default: ets_transit_processed
+    Description: DynamoDB table for processed transit data (must already exist)
+
+Resources:
+  # Lambda Function for data ingestion
+  TransitIngestionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ETS-Transit-Ingestion
+      CodeUri: src/
+      Handler: ingestion.lambda_handler.handler
+      Description: Ingest GTFS-RT data every minute
+      Environment:
+        Variables:
+          S3_BUCKET_NAME: !Ref S3BucketName
+          DYNAMODB_TABLE_NAME: !Ref DynamoDBTableName
+          GTFS_RT_VEHICLE_POSITIONS_URL: https://gtfs.edmonton.ca/TMGTFSRealTimeWebService/Vehicle/VehiclePositions.pb
+          GTFS_RT_TRIP_UPDATES_URL: https://gtfs.edmonton.ca/TMGTFSRealTimeWebService/TripUpdate/TripUpdates.pb
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref S3BucketName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDBTableName
+      Events:
+        ScheduleEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(2 minutes)
+            Description: Trigger GTFS-RT ingestion every 2 minutes
+            Enabled: true
+
+  # CloudWatch Log Group
+  TransitIngestionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${TransitIngestionFunction}
+      RetentionInDays: 7
+
+Outputs:
+  TransitIngestionFunctionArn:
+    Description: ARN of the Transit Ingestion Lambda Function
+    Value: !GetAtt TransitIngestionFunction.Arn
+    Export:
+      Name: TransitIngestionFunctionArn
