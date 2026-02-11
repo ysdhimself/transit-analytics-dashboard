@@ -25,6 +25,8 @@ class DashboardDataLoader:
         self.use_aws = use_aws
         self.s3_client = None
         self.dynamodb = None
+        self._used_mock_vehicles = False
+        self._used_mock_trips = False
         
         if use_aws:
             try:
@@ -119,12 +121,14 @@ class DashboardDataLoader:
                         # Group by vehicle_id and keep most recent
                         if not df.empty and 'vehicle_id' in df.columns:
                             df = df.sort_values('timestamp').groupby('vehicle_id').last().reset_index()
+                    _self._used_mock_vehicles = False
                     return df
             
             except Exception as e:
                 print(f"Error loading from DynamoDB: {e}")
         
         # Fallback: load from local mock data
+        _self._used_mock_vehicles = True
         return _self._load_mock_vehicle_positions()
     
     @st.cache_data(ttl=30)
@@ -185,12 +189,14 @@ class DashboardDataLoader:
                             'feed_timestamp': 'first'
                         }).reset_index()
                     
+                    _self._used_mock_trips = False
                     return df
             
             except Exception as e:
                 print(f"Error loading from DynamoDB: {e}")
         
         # Fallback: load from local mock data
+        _self._used_mock_trips = True
         return _self._load_mock_trip_updates()
     
     def _load_mock_vehicle_positions(self) -> pd.DataFrame:
@@ -243,16 +249,19 @@ class DashboardDataLoader:
 
 
 @st.cache_data(ttl=30)
-def load_dashboard_data() -> Dict[str, pd.DataFrame]:
+def load_dashboard_data() -> Dict:
     """
     Load all data needed for the dashboard.
     
     Returns:
-        Dictionary with 'vehicles' and 'trip_updates' DataFrames
+        Dictionary with 'vehicles', 'trip_updates', and 'data_source' ('live' or 'mock')
     """
     loader = DashboardDataLoader()
-    
+    vehicles = loader.load_vehicle_positions()
+    trip_updates = loader.load_trip_updates()
+    data_source = 'mock' if (loader._used_mock_vehicles or loader._used_mock_trips) else 'live'
     return {
-        'vehicles': loader.load_vehicle_positions(),
-        'trip_updates': loader.load_trip_updates()
+        'vehicles': vehicles,
+        'trip_updates': trip_updates,
+        'data_source': data_source
     }

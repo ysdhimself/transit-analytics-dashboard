@@ -2,12 +2,19 @@
 Edmonton Transit System Real-Time Analytics Dashboard
 Main Streamlit application.
 """
+import sys
+from pathlib import Path
+
+# Ensure dashboard directory is on path so 'components' and 'data_loader' resolve
+_dashboard_dir = Path(__file__).resolve().parent
+if str(_dashboard_dir) not in sys.path:
+    sys.path.insert(0, str(_dashboard_dir))
+
 import streamlit as st
 import pandas as pd
 from datetime import datetime
 import time
 
-# Import components (relative imports)
 from components.kpi_cards import render_kpi_cards
 from components.delay_heatmap import render_delay_heatmap
 from components.route_performance import render_route_performance
@@ -105,6 +112,15 @@ with st.sidebar:
 data = load_dashboard_data()
 vehicles_df = data['vehicles']
 trip_updates_df = data['trip_updates']
+data_source = data.get('data_source', 'live')
+
+# Show banner when using mock data (e.g. Streamlit Cloud without Secrets)
+if data_source == 'mock':
+    st.warning(
+        "**Using sample data.** To see live Edmonton Transit data, add AWS credentials in Streamlit Cloud: "
+        "app **Settings** → **Secrets** → paste your `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, "
+        "`AWS_REGION` (us-east-2), and `DYNAMODB_TABLE_NAME` (ets_transit_processed)."
+    )
 
 # Last refreshed timestamp with countdown
 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

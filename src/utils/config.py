@@ -55,7 +55,7 @@ def get_config(key: str, default: Optional[str] = None) -> Optional[str]:
 # AWS Configuration
 AWS_ACCESS_KEY_ID = get_config('AWS_ACCESS_KEY_ID') or get_config('aws.AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = get_config('AWS_SECRET_ACCESS_KEY') or get_config('aws.AWS_SECRET_ACCESS_KEY')
-AWS_DEFAULT_REGION = get_config('AWS_DEFAULT_REGION', 'us-east-1') or get_config('aws.AWS_DEFAULT_REGION', 'us-east-1')
+AWS_DEFAULT_REGION = get_config('AWS_DEFAULT_REGION') or get_config('AWS_REGION') or get_config('aws.AWS_DEFAULT_REGION') or get_config('aws.AWS_REGION') or 'us-east-2'
 S3_BUCKET_NAME = get_config('S3_BUCKET_NAME', 'ets-transit-data') or get_config('aws.S3_BUCKET_NAME', 'ets-transit-data')
 DYNAMODB_TABLE_NAME = get_config('DYNAMODB_TABLE_NAME', 'ets_transit_processed') or get_config('aws.DYNAMODB_TABLE_NAME', 'ets_transit_processed')
 
