@@ -82,7 +82,7 @@ jobs:
     name: Deploy Lambda Function
     runs-on: ubuntu-latest
     needs: [lint, test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: false  # Disabled - Lambda deployed manually via SAM
     
     steps:
       - name: Checkout code
@@ -135,7 +135,7 @@ jobs:
     name: Deploy with SAM (Alternative)
     runs-on: ubuntu-latest
     needs: [lint, test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: false  # Disabled - Lambda deployed manually via SAM
     
     steps:
       - name: Checkout code
